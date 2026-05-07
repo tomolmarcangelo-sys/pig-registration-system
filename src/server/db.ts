@@ -1,4 +1,6 @@
 import mysql from 'mysql2/promise';
+import fs from 'fs';
+import path from 'path';
 
 interface MySQLConfig {
   host: string;
@@ -9,9 +11,18 @@ interface MySQLConfig {
   waitForConnections: boolean;
   connectionLimit: number;
   queueLimit: number;
+  ssl: {
+    rejectUnauthorized: boolean;
+    ca?: Buffer | string; // Added this to the interface
+  };
 }
 
-// Create connection pool
+// 1. Determine if we are in production
+const isProduction = process.env.NODE_ENV === 'production';
+
+// 2. Setup the CA path (assumes aiven-ca.pem is in your project root)
+const caPath = path.join(process.cwd(), 'aiven-ca.pem');
+
 const config: MySQLConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '3306'),
@@ -21,6 +32,14 @@ const config: MySQLConfig = {
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  ssl: {
+    // Enable strict verification in production
+    rejectUnauthorized: isProduction,
+    // Only attempt to read the file if we are in production or file exists
+    ca: isProduction && fs.existsSync(caPath) 
+        ? fs.readFileSync(caPath) 
+        : undefined,
+  },
 };
 
 let pool: mysql.Pool;
