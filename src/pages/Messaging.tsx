@@ -239,7 +239,7 @@ export default function Messaging() {
                 </p>
                 <p className="text-sm text-gray-500 mt-1 line-clamp-2">{msg.content}</p>
               </div>
-              <div className="text-right flex-shrink-0 ml-4">
+              <div className="text-right shrink-0 ml-4">
                 <p className="text-xs text-gray-500">
                   {format(new Date(msg.createdAt), 'MMM d')}
                 </p>
